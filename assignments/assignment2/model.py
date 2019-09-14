@@ -17,8 +17,9 @@ class TwoLayerNet:
         reg, float - L2 regularization strength
         """
         self.reg = reg
-        # TODO Create necessary layers
-        raise Exception("Not implemented!")
+        self.fc1 = FullyConnectedLayer(n_input, hidden_layer_size)
+        self.ReLU1 = ReLULayer()
+        self.fc2 = FullyConnectedLayer(hidden_layer_size, n_output)
 
     def compute_loss_and_gradients(self, X, y):
         """
@@ -33,14 +34,23 @@ class TwoLayerNet:
         # clear parameter gradients aggregated from the previous pass
         # TODO Set parameter gradient to zeros
         # Hint: using self.params() might be useful!
-        raise Exception("Not implemented!")
-        
+        params = self.params()
+        for key in params.keys():
+            params[key].grad = np.zeros_like(params[key].value)
         # TODO Compute loss and fill param gradients
         # by running forward and backward passes through the model
         
         # After that, implement l2 regularization on all params
         # Hint: self.params() is useful again!
-        raise Exception("Not implemented!")
+        out1 = self.ReLU1.forward(self.fc1.forward(X))
+        out2 = self.fc2.forward(out1)
+        loss, grad = softmax_with_cross_entropy(out2, y)
+        for key in params.keys():
+            l2_loss, l2_grad = l2_regularization(params[key].value, self.reg)
+            loss += l2_loss
+            params[key].grad += l2_grad
+        d_out2 = self.fc2.backward(grad)
+        self.fc1.backward(self.ReLU1.backward(d_out2))
 
         return loss
 
@@ -57,9 +67,9 @@ class TwoLayerNet:
         # TODO: Implement predict
         # Hint: some of the code of the compute_loss_and_gradients
         # can be reused
-        pred = np.zeros(X.shape[0], np.int)
-
-        raise Exception("Not implemented!")
+        out1 = self.ReLU1.forward(self.fc1.forward(X))
+        out2 = self.fc2.forward(out1)
+        pred = out2.argmax(axis=1)
         return pred
 
     def params(self):
@@ -67,6 +77,9 @@ class TwoLayerNet:
 
         # TODO Implement aggregating all of the params
 
-        raise Exception("Not implemented!")
+        result['W1'] = self.fc1.W
+        result['B1'] = self.fc1.B
+        result['W2'] = self.fc2.W
+        result['B2'] = self.fc2.B
 
         return result

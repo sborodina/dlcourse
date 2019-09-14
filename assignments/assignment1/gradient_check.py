@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 
 def check_gradient(f, x, delta=1e-5, tol = 1e-4):
@@ -21,6 +22,7 @@ def check_gradient(f, x, delta=1e-5, tol = 1e-4):
     
     orig_x = x.copy()
     fx, analytic_grad = f(x)
+    print(fx, analytic_grad)
     assert np.all(np.isclose(orig_x, x, tol)), "Functions shouldn't modify input variables"
 
     assert analytic_grad.shape == x.shape
@@ -28,11 +30,16 @@ def check_gradient(f, x, delta=1e-5, tol = 1e-4):
 
     # We will go through every dimension of x and compute numeric
     # derivative for it
+
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
     while not it.finished:
-        ix = it.multi_index
+        ix = it.multi_index # первый шаг: индекс 0,0
         analytic_grad_at_ix = analytic_grad[ix]
-        numeric_grad_at_ix = 0
+        x_h1 = x.copy()
+        x_h2 = x.copy()
+        x_h1[ix] += delta
+        x_h2[ix] -= delta
+        numeric_grad_at_ix = (f(x_h1)[0] - f(x_h2)[0]) / (2 * delta)
 
         # TODO compute value of numeric gradient of f to idx
         if not np.isclose(numeric_grad_at_ix, analytic_grad_at_ix, tol):

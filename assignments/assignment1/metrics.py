@@ -1,3 +1,4 @@
+from sklearn.metrics import confusion_matrix
 def binary_classification_metrics(prediction, ground_truth):
     '''
     Computes metrics for binary classification
@@ -9,10 +10,11 @@ def binary_classification_metrics(prediction, ground_truth):
     Returns:
     precision, recall, f1, accuracy - classification metrics
     '''
-    precision = 0
-    recall = 0
-    accuracy = 0
-    f1 = 0
+    conf_matr = confusion_matrix(prediction, ground_truth)
+    precision = conf_matr[1, 1] / (conf_matr[1, 1] + conf_matr[0, 1])
+    recall = conf_matr[1, 1] / (conf_matr[1, 1] + conf_matr[1, 0])
+    accuracy = (conf_matr[0, 0] + conf_matr[1, 1]) / len(prediction)
+    f1 = 2 * (precision * recall) / (precision + recall)
 
     # TODO: implement metrics!
     # Some helpful links:
@@ -34,4 +36,9 @@ def multiclass_accuracy(prediction, ground_truth):
     accuracy - ratio of accurate predictions to total samples
     '''
     # TODO: Implement computing accuracy
-    return 0
+    counter = 0
+    for i in range(len(prediction)):
+        if prediction[i] == ground_truth[i]:
+            counter += 1
+    acc = counter / len(prediction)
+    return acc
